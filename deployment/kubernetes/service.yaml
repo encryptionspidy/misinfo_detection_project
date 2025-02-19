@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: triton-inference-service
+  labels:
+    app: triton-inference
+spec:
+  type: LoadBalancer  # Expose service externally via cloud load balancer
+  selector:
+    app: triton-inference
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000  # Maps to the container's HTTP port
+    - name: grpc
+      port: 8001
+      targetPort: 8001  # Maps to the container's gRPC port
+    - name: metrics
+      port: 8002
+      targetPort: 8002  # Prometheus metrics port
+
+---
+

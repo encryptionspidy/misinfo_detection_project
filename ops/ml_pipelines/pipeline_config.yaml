@@ -1,0 +1,61 @@
+pipeline:
+  name: "MisinfoDetectionPipeline"
+  version: "1.0"
+
+data_ingestion:
+  sources:
+    - name: "LiveSocialFeeds"
+      type: "stream"
+      format: "json"
+    - name: "NewsAPIs"
+      type: "api"
+      endpoint: "https://newsapi.org/v2/top-headlines"
+      auth_token: "YOUR_API_KEY"
+    - name: "UserReports"
+      type: "manual"
+      format: "csv"
+  batch_size: 100
+  retry_attempts: 3
+  ingestion_interval: "5m"
+
+model_training:
+  llm_model: "google/flan-t5-large"
+  malicious_url_model: "custom-malicious-url-detector"
+  factual_model: "custom-factual-verifier"
+  hyperparameters:
+    learning_rate: 2e-5
+    epochs: 5
+    batch_size: 32
+    weight_decay: 0.01
+  evaluation_metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1_score
+
+deployment:
+  strategy: "rolling"
+  endpoint: "https://api.misinfo-detection.com"
+  monitoring:
+    enable: true
+    alert_thresholds:
+      drift_detection: 0.1
+      latency: 200
+  logging_level: "INFO"
+  resources:
+    cpu: "2"
+    memory: "4Gi"
+
+active_learning:
+  enable: true
+  human_in_loop: true
+  review_interval: "24h"
+  confidence_threshold: 0.8
+
+storage:
+  s3_bucket: "misinfo-detection-data-bucket"
+  delta_lake_path: "/mnt/delta/misinfo_data"
+  vector_db:
+    host: "localhost"
+    port: 19530
+    collection: "misinfo_vectors"
